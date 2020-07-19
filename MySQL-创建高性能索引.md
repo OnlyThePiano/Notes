@@ -14,7 +14,7 @@
 
 # MySQL-创建高性能索引
 
-前面学习了 [MySQL-数据类型优化]((https://onlythepiano.github.io/mysql-数据类型优化/)) ，和 [MySQL-查询性能优化](https://onlythepiano.github.io/mysql-查询性能优化/) 。而这里学习索引。索引 (在MySQL中也叫做 `键(key)`) 是存储引擎用于快速找到记录的一种数据结构。
+前面学习了  [MySQL-数据类型优化]((https://onlythepiano.github.io/mysql-数据类型优化/))  和  [MySQL-查询性能优化](https://onlythepiano.github.io/mysql-查询性能优化/) 。而这里学习索引。索引 (在MySQL中也叫做 `键(key)`) 是存储引擎用于快速找到记录的一种数据结构。
 
 索引对于良好的性能非常关键。尤其是当表中的数据量越来越大时，索引对性能的影响愈发重要。在数据量较小且负载较低时，不恰当的索引对性能的影响可能还不明显，但当数据量逐渐增大时，性能则会急剧下降生。
 
@@ -163,7 +163,9 @@ SELECT * FROM payment WHERE staff_id = 2 AND customer = 584;
 
 ![image-20200719135341174](https://github.com/OnlyThePiano/Notes/blob/master/images/image-20200719135341174.png)
 
-![image-20200719135400026](https://github.com/OnlyThePiano/Notes/blob/master/images/image-20200719135400026.png)从上面的结果来看符合组 (groupId) 条件几乎满足表中的所有行，符合用户 (userId) 条件的有 130 万条记录；也就是说索引 (groupId, userId) 基本上没什么用。
+![image-20200719135400026](https://github.com/OnlyThePiano/Notes/blob/master/images/image-20200719135400026.png)
+
+从上面的结果来看符合组 (groupId) 条件几乎满足表中的所有行，符合用户 (userId) 条件的有 130 万条记录；也就是说索引 (groupId, userId) 基本上没什么用。
 
 因为这些数据是从其他应用中迁移过来的，迁移的时候把所有的消息都赋予了管理员组的用户。解决办法是修改应用程序代码，区分这类特殊用户和组，禁止针对这类用户和组执行这个查询。
 
@@ -171,9 +173,11 @@ SELECT * FROM payment WHERE staff_id = 2 AND customer = 584;
 
 ### 5. 聚簇索引
 
-[聚簇索引和覆盖索引](https://github.com/OnlyThePiano/Notes/blob/master/MySQL-聚簇索引和覆盖索引.md)
+[索引](https://onlythepiano.github.io/索引/)
 
 ### 6. 覆盖索引
 
-[聚簇索引和覆盖索引](https://github.com/OnlyThePiano/Notes/blob/master/MySQL-聚簇索引和覆盖索引.md)
+` 覆盖索引（covering index）` 指一个查询语句的执行只用从索引中就能够取得，不必从数据表中读取。也可以称之为实现了索引覆盖。
+
+当一条查询语句符合覆盖索引条件时，MySQL 只需要通过索引就可以返回查询所需要的数据，这样避免了查到索引后再返回表操作，减少I/O提高效率。 如，表 covering_index_sample 中有一个普通索引 idx_key1_key2(key1,key2)。当我们通过SQL语句：`select key2 from covering_index_sample where key1 = ‘keytest’; ` 就可以通过覆盖索引查询，无需回表。
 
