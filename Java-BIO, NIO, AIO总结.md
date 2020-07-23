@@ -1,4 +1,22 @@
-原文链接：https://github.com/Snailclimb/JavaGuide/blob/master/docs/java/BIO-NIO-AIO.md
+## 目录
+
+- [BIO, NIO, AIO 总结](#bio--nio--aio---)
+  * [一、背景知识](#------)
+  * [二、BIO (Blocking I/O)](#--bio--blocking-i-o-)
+    + [1. 传统 BIO](#1----bio)
+    + [2. 伪异步 IO](#2-----io)
+  * [三、NIO (Non-Blocking/New-Blocking)](#--nio--non-blocking-new-blocking-)
+    + [1. Buffer](#1-buffer)
+    + [2. Channel](#2-channel)
+    + [3. 字符集 和 Charset](#3-------charset)
+  * [四、AIO (Asynchronous I/O)](#--aio--asynchronous-i-o-)
+    + [1.Path 接口 和 Paths、Files 工具类](#1path------paths-files----)
+
+
+
+
+
+链接：https://github.com/Snailclimb/JavaGuide/blob/master/docs/java/BIO-NIO-AIO.md
 
 # BIO, NIO, AIO 总结
 
@@ -8,8 +26,8 @@ Java 中的 BIO、NIO和 AIO 理解为是 Java 语言对操作系统的各种 IO
 
 **- 同步和异步：**
 
-- **同步** ：两个同步任务相互依赖，并且一个任务必须以依赖于另一任务的某种方式执行。 比如在`A->B`事件模型中，你需要先完成 A 才能执行B。 再换句话说，同步调用种被调用者未处理完请求之前，调用不返回，调用者会一直等待结果的返回。
-- **异步**： 两个异步的任务完全独立的，一方的执行不需要等待另外一方的执行。再换句话说，异步调用种一调用就返回结果不需要等待结果返回，当结果返回的时候通过回调函数或者其他方式拿着结果再做相关事情。
+- **同步 ：** 两个同步任务相互依赖，并且一个任务必须以依赖于另一任务的某种方式执行。 比如在`A->B`事件模型中，你需要先完成 A 才能执行B。 再换句话说，同步调用种被调用者未处理完请求之前，调用不返回，调用者会一直等待结果的返回。
+- **异步：** 两个异步的任务完全独立的，一方的执行不需要等待另外一方的执行。再换句话说，异步调用种一调用就返回结果不需要等待结果返回，当结果返回的时候通过回调函数或者其他方式拿着结果再做相关事情。
 
 
 
@@ -239,3 +257,19 @@ NIO 2 对原来的 NIO 进行了改进主要包括如下两方面：
 
 
 
+### 1.Path 接口 和 Paths、Files 工具类
+
+**早期提供的 `File类`**  ，功能比较有限，它不能利用特定文件系统的特性，File 所提供的方法的性能也不高。而且，其大多数方法在出错时仅返回失败，并不会提供异常信息。
+
+**NIO.2 引入了一个 `Path接口`** ，Path 接口代表一个平台无关的平台路径。除此之外, NIO.2 还提供了 `Files` 、` Paths ` 两个 `工具类` ，其中 Files 包含了大量静态的工具方法来操作文件；Paths 则包含了两个返回 Path 的静态工厂方法。
+
+~~~java
+//以当前路径创建 Path 对象
+Path path = Paths.get(".");		//Path 接口和 Paths 工具类
+~~~
+
+**- 工具类的用途：**
+
+Files 和 Paths 两个工具类大大简化了文件 IO；比如前面介绍的操作数组的工具类为 Arrays ，操作集合的工具类为 Collections 。都提供了大量便捷的工具方法操作。
+
+更详细的 Files 工具类方法省略.........................
