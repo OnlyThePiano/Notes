@@ -78,16 +78,25 @@ Java 中的 BIO、NIO和 AIO 理解为是 Java 语言对操作系统的各种 IO
 
 ## 三、NIO (Non-Blocking/New-Blocking)
 
-BIO 传统输入流、输出流都是通过字节的移动来处理的 (即使不直接去处理字节流，但底层的实现还是依赖于字节处理)，也就是说，面向流的输入/输出系统一次只能处理一个字节， 因此面向流的输入/输出系统通常效率不高。
+BIO 传统输入流、输出流都是通过字节的移动来处理的 (即使不直接去处理字节流，但底层的实现还是依赖于字节处理)，也就是说，面向流的 输入/输出 系统一次只能处理一个字节， 因此面向流的 输入/输出 系统通常效率不高。
 
-NIO 和传统的 IO 有相同的目的，都是用于进行输入/输出；但新 IO 使用了不同的方式来处理输入/输出，新 IO 采用**内存映射文件的方式**来处理输入/输出，新 IO 将文件或文件的一段区域映射到内存中，这样就可以像访问内存一样来访问文件了(这种方式模拟了操作系统上的虛拟内存的概念)，通过这种方式来进行输入/输出比传统的输入/输出要快得多。
 
-**- NIO 的两个核心对象：**
+
+NIO 和传统的 IO 有相同的目的，都是用于进行 输入/输出；但是，新 IO 使用了不同的方式来处理输入/输出，新 IO 采用 **内存映射文件的方式** 来处理输入/输出，新 IO 将文件或文件的一段区域映射到内存中，这样就可以像访问内存一样来访问文件了 (这种方式模拟了操作系统上的虛拟内存的概念)，通过这种方式来进行 输入/输出 比传统的 输入/输出 要快得多。
+
+**- NIO 的三个核心对象：**
 
 * Channel (管道)
 * Buffer (缓冲)
+* Selector (选择器)
+
+![image-20200727140640062](https://github.com/OnlyThePiano/Notes/blob/master/images/image-20200727140640062.png)
 
 
+
+---
+
+下面详细介绍学习
 
 ### 1. Buffer
 
@@ -95,9 +104,11 @@ Buffer 可以被理解成一个 容器，它的本质是一个数组，发送到
 
 Buffer 是一个抽象类，其最常用的子类是 `ByteBuffer` 和 `CharBuffer` 。其中 `ByteBuffer` 还有一个子类 `MappedByteBuffer` ：表示 Channel 将磁盘文件的部分或全部内容映射到内存中后得到的结果。
 
-**- 怎么创建 Buffer对象呢 ？**
 
-Buffer 类都没有构造器，所以创建方式适合一般对象的创建不一样，它的创建要使用如下方法：
+
+**怎么创建 Buffer对象呢 ？**
+
+答：Buffer 类都没有构造器，所以创建方式适合一般对象的创建不一样，它的创建要使用如下方法：
 
 ~~~
 : static XxxBuffer allocate(int capacity)
@@ -142,14 +153,16 @@ CharBuffer buff = CharBuffer.allocate(8);
 
 Channel (通道) 是对传统的输入/输出系统的模拟；在 NIO 系统中所有的数据都需要通过通道传输；但是存在的区别如下。
 
-**- Channel 和传统流的两个主要区别：**
+**- Channel 和传统流 的两个主要区别：**
 
 * Channel 可以直接将指定文件的部分或全部直接映射成Buffer。它提供了一个 `map()` 方法，通过该 `map()` 方法可以直接将 “一块数据” 映射到内存中。
 * 程序不能直接访问 Channel 中的数据，包括读取、写入都不行，Channel 只能与Buffer 进行交互。
 
 
 
-Channel 接口提供的实现类有 `FileChannel` 、`SocketChannel` 、 `ServerSocketChannel` 等。和 `Buffer` 一样，Channel 也不该通过构造器直接创建，而是通过传统的节点 `InputStream`、`OutputStream` 的 `getChannel()` 方法来返回对应的 Channel，不同的节点流获得的 Channel 不一样 。
+**怎么创建 Channel 对象呢 ？**
+
+答：Channel 接口提供的实现类有 `FileChannel` 、`SocketChannel` 、 `ServerSocketChannel` 等。和 `Buffer` 一样，Channel 也不该通过构造器直接创建，而是通过传统的节点 `InputStream`、`OutputStream` 的 `getChannel()` 方法来返回对应的 Channel，不同的节点流获得的 Channel 不一样 。
 
 
 
@@ -159,8 +172,13 @@ Channel 接口提供的实现类有 `FileChannel` 、`SocketChannel` 、 `Server
 * read()：从 `Buffer` 读取数据
 * write()：向 `Buffer` 写入数据
 
-**注意：** map() 方法的方法签名为 `MappedByteBuffer map(FileChannel.MapMode mode, long position, long
-size)` ，第一个参数执行映射时的模式，分别有只读、读写等模式；第二个、第三个参数用于控制将 Channel 的哪些数据映射成 ByteBuffer。
+
+
+**注意：** map() 方法的方法签名为 `MappedByteBuffer map(FileChannel.MapMode mode, long position, longsize)` ，第一个参数执行映射时的模式，分别有只读、读写等模式；第二个、第三个参数用于控制将 Channel 的哪些数据映射成 ByteBuffer。
+
+
+
+
 
 **下面例子示范了直接将 `FileChannel` 的全部数据映射成 `ByteBuffer` ：**
 
@@ -195,13 +213,13 @@ public class FileChannelTest {
 }
 ~~~
 
-到 (3) 时，完成了将整个 `ByteBuffer` 的全部数据写入一个输出的 `FileChannel` ，这就完成了文件复制。 
+到 **(3)** 时，完成了将整个 `ByteBuffer` 的全部数据写入一个输出的 `FileChannel` ，这就完成了文件复制。 
 
-之后 (4) 的部分是将文件的内容打印出来，使用了 `Charset 类` 和 `CharsetDecoder 类` 将  `ByteBuffer` 转换成 `CharBuffer` 。
+之后 **(4)** 的部分是将文件的内容打印出来，使用了 `Charset 类` 和 `CharsetDecoder 类` 将  `ByteBuffer` 转换成 `CharBuffer` 。
 
 
 
-### 3. 字符集 和 Charset
+## 3. 字符集 和 Charset
 
 计算机里的文件、数据、图片文件只是一种表面现象，所有文件在底层都是二进制文件，即全部都是字节码。图片、音乐文件暂时先不说，对于文本文件而言，之所以可以看到一个个的字符，这完全是因为系统将底层的二进制序列转换成字符的缘故。在这个过程中涉及两个概念：`编码(Encode)`和 `解码(Decode)`  。
 
@@ -246,6 +264,51 @@ ABC
 
 
 
+### 4. Selector 类
+
+**Selector选择器** 用于使用单个线程处理多个通道。因此，它需要较少的线程来处理这些通道。线程之间的切换对于操作系统来说是昂贵的。 因此，为了提高系统效率选择器是有用的。
+
+它是 `SelectableChannel` 对象的多路复用器，所有希望采用非阻塞方式进行通信的 Channel 都应该注册到 Selector 对象。可以通过调用此类的 `open()` 静态方法来创建 Selector 实例，该方法将使用系统默认的 Selector 来返回新的 Selector 。 **Selector 可以同时监控多个 SelectableChannel 的 IO 状况，是非阻塞 IO 的核心。** 
+
+
+
+**什么是 SelectableChannel 呢 ？**
+
+答：SelectableChannel 类提供了实现通道的可选择性所需要的公共方法。它是所有支持就绪检查的通道类的父类。所有 socket 通道，都继承了SelectableChannel类。
+
+所以呢，不是所有的Channel，都是可以被Selector 复用的。FileChannel 没有继承所以就不能被选择器复用。
+
+
+
+那就如下图举例（以 ServerSocketChannel、SocketChannel 为例）：
+
+![image-20200727134718691](https://github.com/OnlyThePiano/Notes/blob/master/images/image-20200727134718691.png)
+
+
+
+从上图可以看出，服务器上的所有 **Channel** (包括 ServerSocketChannel 和 SocketChannel) 都需要向 **Selector** 注册，而该 Selector 则负责监视这些 Socket 的 IO 状态，当其中任意一个或多个Channel 具有可用的 IO 操作时，该 Selector 的 `select()` 方法将会返回大于 0 的整数，表示该 Selector上有多少个 Channel 具有可用的 IO 操作，并提供了 `selectedKeys()` 方法来返回这些 Channel 对应的 `SelectionKey` 集合。
+
+正是通过 Selector，使得服务器端只需要不断地调用 Selector 实例的 `select()` 方法，即可知道当前的所有 Channel 是否有需要处理的 IO 操作。
+
+
+
+**下面介绍 Selector 的使用：**
+
+~~~java
+//创建 Selector
+Selector selector = Selector.open();
+
+//将 Channel 注册到 Selector
+ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();	//1.获取通道
+serverSocketChannel.configureBlocking(false);	//2.设置位非阻塞
+serverSocketChannel.bind(new InetSocketAddress(SystemConfig.SOCKET_SERVER_PORT));	//3.绑定连接
+serverSocketChannel.register(selector，SelectionKey.OP_ACCEPT);	//5.将通道注册到选择器上,并制定监听事件为：“接收”事件
+~~~
+
+
+
+
+
 ## 四、AIO (Asynchronous I/O)
 
 AIO 也就是 NIO 2。AIO 是异步 IO 的缩写，虽然 NIO 在网络操作中，提供了非阻塞的方法，但是 NIO 的 IO 行为还是同步的。对于 NIO 来说，我们的业务线程是在 IO 操作准备好时，得到通知，接着就由这个线程自行进行 IO 操作，IO 操作本身是同步的。
@@ -259,7 +322,7 @@ NIO 2 对原来的 NIO 进行了改进主要包括如下两方面：
 
 ### 1.Path 接口 和 Paths、Files 工具类
 
-**早期提供的 `File类`**  ，功能比较有限，它不能利用特定文件系统的特性，File 所提供的方法的性能也不高。而且，其大多数方法在出错时仅返回失败，并不会提供异常信息。
+**早期提供的 File类**  ，功能比较有限，它不能利用特定文件系统的特性，File 所提供的方法的性能也不高。而且，其大多数方法在出错时仅返回失败，并不会提供异常信息。
 
 **NIO.2 引入了一个 `Path接口`** ，Path 接口代表一个平台无关的平台路径。除此之外, NIO.2 还提供了 `Files` 、` Paths ` 两个 `工具类` ，其中 Files 包含了大量静态的工具方法来操作文件；Paths 则包含了两个返回 Path 的静态工厂方法。
 
